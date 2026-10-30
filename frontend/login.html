@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Registration - PharmaTrack</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+
+    <!-- Header Mount -->
+    <div id="navbar-mount"></div>
+
+    <div class="container" style="display: flex; align-items: center; justify-content: center; min-height: 85vh; padding: 2rem 1rem;">
+        
+        <div style="background: #ffffff; border-radius: 16px; box-shadow: var(--shadow-lg); max-width: 480px; width: 100%; overflow: hidden;">
+            
+            <!-- Header -->
+            <div style="background: #0a2540; color: #ffffff; padding: 2rem; text-align: center;">
+                <div class="brand-icon" style="margin: 0 auto 0.75rem auto; width: 44px; height: 44px; font-size: 1.5rem;">⚕</div>
+                <h2 style="color: #ffffff; font-size: 1.5rem; margin-bottom: 0.25rem;">PharmaTrack Portal</h2>
+                <p style="color: #94a3b8; font-size: 0.85rem;">Secure Access for Patients, Staff & Administrators</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div style="display: flex; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                <button id="tab-btn-login" class="btn" style="flex: 1; border-radius: 0; background: #ffffff; border-bottom: 2px solid #0284c7; color: #0284c7;" onclick="switchAuthTab('login')">
+                    Log In
+                </button>
+                <button id="tab-btn-register" class="btn" style="flex: 1; border-radius: 0; background: transparent; color: #64748b;" onclick="switchAuthTab('register')">
+                    Register Customer
+                </button>
+            </div>
+
+            <div style="padding: 2rem;">
+
+                <!-- Login Form -->
+                <form id="login-form">
+                    <div class="form-group" style="margin-bottom: 1.25rem;">
+                        <label class="form-label" for="login-username">Username or Email</label>
+                        <input type="text" id="login-username" class="form-control" required placeholder="admin / staff / customer" value="admin">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label" for="login-password">Password</label>
+                        <input type="password" id="login-password" class="form-control" required placeholder="••••••••" value="Admin@123">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
+                        Sign In →
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="reg-fullname">Full Name</label>
+                        <input type="text" id="reg-fullname" class="form-control" required placeholder="Alex Rivera">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="reg-username">Username</label>
+                        <input type="text" id="reg-username" class="form-control" required placeholder="alex_rivera">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="reg-email">Email Address</label>
+                        <input type="email" id="reg-email" class="form-control" required placeholder="alex@example.com">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="reg-phone">Phone Number</label>
+                        <input type="tel" id="reg-phone" class="form-control" placeholder="+1 (555) 000-0000">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label" for="reg-password">Password</label>
+                        <input type="password" id="reg-password" class="form-control" required placeholder="At least 6 characters">
+                    </div>
+
+                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
+                        Create Account
+                    </button>
+                </form>
+
+                <!-- 1-Click Evaluation / Demo Login Switcher -->
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed #cbd5e1; text-align: center;">
+                    <div style="font-size: 0.78rem; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+                        Academic Demonstration & Viva Quick Login
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="quickLogin('admin')" title="Login as Administrator">
+                            🛡️ Admin
+                        </button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="quickLogin('staff')" title="Login as Pharmacy Staff">
+                            🧑‍⚕️ Staff
+                        </button>
+                        <button type="button" class="btn btn-outline btn-sm" onclick="quickLogin('customer')" title="Login as Customer">
+                            👤 Customer
+                        </button>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.65rem;">
+                        Default passwords: <code>Admin@123</code>, <code>Staff@123</code>, <code>Customer@123</code>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const regForm = document.getElementById('register-form');
+            const btnLogin = document.getElementById('tab-btn-login');
+            const btnReg = document.getElementById('tab-btn-register');
+
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                regForm.style.display = 'none';
+                btnLogin.style.background = '#ffffff';
+                btnLogin.style.borderBottom = '2px solid #0284c7';
+                btnLogin.style.color = '#0284c7';
+                btnReg.style.background = 'transparent';
+                btnReg.style.borderBottom = 'none';
+                btnReg.style.color = '#64748b';
+            } else {
+                loginForm.style.display = 'none';
+                regForm.style.display = 'block';
+                btnReg.style.background = '#ffffff';
+                btnReg.style.borderBottom = '2px solid #10b981';
+                btnReg.style.color = '#10b981';
+                btnLogin.style.background = 'transparent';
+                btnLogin.style.borderBottom = 'none';
+                btnLogin.style.color = '#64748b';
+            }
+        }
+    </script>
+</body>
+</html>

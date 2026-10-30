@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batches & Expiry Management (FEFO) - PharmaTrack</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header Mount -->
+    <div id="navbar-mount"></div>
+
+    <!-- Admin Sub-Navigation -->
+    <div class="sub-nav">
+        <a href="admin-dashboard.html">📊 Overview</a>
+        <a href="admin-medicines.html">💊 Medicines & Categories</a>
+        <a href="admin-batches.html" class="active">📦 Batches & Expiry (FEFO)</a>
+        <a href="admin-suppliers.html">🏭 Suppliers & Restocking</a>
+        <a href="admin-orders.html">🛍️ Order Fulfillment & Rx</a>
+        <a href="admin-reports.html">📈 Reports & CSV Export</a>
+    </div>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Batch Tracking & Expiry Control (FEFO)</h1>
+                <p class="page-subtitle">Granular batch-level inventory tracking with automated First-Expired First-Out rules</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openNewBatchModal()">+ Add New Stock Batch</button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="search-bar-container">
+            <div class="form-group" style="flex: 2;">
+                <label class="form-label" for="batch-search">Search Batches</label>
+                <input type="text" id="batch-search" class="form-control" placeholder="Search by batch number, medicine name, or supplier...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="batch-status-filter">Batch Status Filter</label>
+                <select id="batch-status-filter" class="form-control">
+                    <option value="">All Batches</option>
+                    <option value="ACTIVE">Active & Safe Stock</option>
+                    <option value="NEAR_EXPIRY">Near Expiry (≤ 30 Days)</option>
+                    <option value="EXPIRED">Expired Stock (Blocked)</option>
+                    <option value="DEPLETED">Depleted (0 Units)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Batches Table -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Batch ID</th>
+                        <th>Medicine</th>
+                        <th>Batch #</th>
+                        <th>Mfg Date</th>
+                        <th>Expiry Date</th>
+                        <th>Stock (Avail / Rcvd)</th>
+                        <th>Cost</th>
+                        <th>Expiry Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="batches-table-body">
+                    <!-- Rendered by inventory.js -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- New Batch Modal -->
+    <div class="modal-overlay" id="new-batch-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Incoming Medicine Batch</h3>
+                <button class="modal-close" onclick="closeNewBatchModal()">&times;</button>
+            </div>
+            <form id="form-new-batch">
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="new-batch-medicine">Target Medicine *</label>
+                        <select id="new-batch-medicine" class="form-control" required>
+                            <!-- Dynamically loaded -->
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="new-batch-number">Batch Number *</label>
+                            <input type="text" id="new-batch-number" class="form-control" required placeholder="e.g. PCM-2026-X1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="new-batch-supplier">Supplier</label>
+                            <select id="new-batch-supplier" class="form-control">
+                                <!-- Dynamically loaded -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="new-batch-mfg">Manufacturing Date *</label>
+                            <input type="date" id="new-batch-mfg" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="new-batch-exp">Expiry Date *</label>
+                            <input type="date" id="new-batch-exp" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="new-batch-qty">Quantity Received *</label>
+                            <input type="number" id="new-batch-qty" class="form-control" required min="1" placeholder="100">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="new-batch-cost">Unit Purchase Cost ($) *</label>
+                            <input type="number" id="new-batch-cost" class="form-control" required min="0.00" step="0.01" placeholder="2.50">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeNewBatchModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">+ Add Batch & Log Receipt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Stock Adjustment Modal -->
+    <div class="modal-overlay" id="stock-adjustment-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Inventory Stock Adjustment</h3>
+                <button class="modal-close" onclick="closeAdjustmentModal()">&times;</button>
+            </div>
+            <form id="form-stock-adjustment">
+                <div class="modal-body">
+                    <div style="background: #f8fafc; padding: 0.85rem; border-radius: 8px; margin-bottom: 1.25rem; font-size: 0.9rem;">
+                        <span style="color: #64748b;">Target Batch:</span>
+                        <div style="font-weight: 700; color: #0f172a;" id="adj-modal-batch-info">-</div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="adj-type">Adjustment Action *</label>
+                            <select id="adj-type" class="form-control" required>
+                                <option value="INCREASE">INCREASE (+ Units)</option>
+                                <option value="DECREASE">DECREASE (- Units)</option>
+                                <option value="DISPOSAL">EXPIRED DISPOSAL (Safe Discard)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="adj-qty">Quantity (Units) *</label>
+                            <input type="number" id="adj-qty" class="form-control" required min="1" value="1">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="adj-reason">Mandatory Audit Reason *</label>
+                        <select id="adj-reason" class="form-control" required>
+                            <option value="">Select Audit Reason...</option>
+                            <option value="Damaged / Broken packaging in storage">Damaged / Broken packaging in storage</option>
+                            <option value="Physical cycle-count discrepancy">Physical cycle-count discrepancy</option>
+                            <option value="Customer return inspection passed">Customer return inspection passed</option>
+                            <option value="Expired batch quarantined and disposed">Expired batch quarantined and disposed</option>
+                            <option value="Quality assurance testing sample">Quality assurance testing sample</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="adj-notes">Additional Pharmacist Notes</label>
+                        <input type="text" id="adj-notes" class="form-control" placeholder="Optional reference notes">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAdjustmentModal()">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Confirm Adjustment & Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/inventory.js"></script>
+</body>
+</html>

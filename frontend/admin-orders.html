@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Order Fulfillment & Rx Verification - PharmaTrack</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header Mount -->
+    <div id="navbar-mount"></div>
+
+    <!-- Admin Sub-Navigation -->
+    <div class="sub-nav">
+        <a href="admin-dashboard.html">📊 Overview</a>
+        <a href="admin-medicines.html">💊 Medicines & Categories</a>
+        <a href="admin-batches.html">📦 Batches & Expiry (FEFO)</a>
+        <a href="admin-suppliers.html">🏭 Suppliers & Restocking</a>
+        <a href="admin-orders.html" class="active">🛍️ Order Fulfillment & Rx</a>
+        <a href="admin-reports.html">📈 Reports & CSV Export</a>
+    </div>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Order Processing & Prescription Verification</h1>
+                <p class="page-subtitle">Review orders, verify doctor prescriptions, and manage fulfillment workflow</p>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="search-bar-container">
+            <div class="form-group" style="flex: 2;">
+                <label class="form-label" for="order-search">Search Orders</label>
+                <input type="text" id="order-search" class="form-control" placeholder="Search by Order #, Customer Name, or Phone...">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="order-status-filter">Status Filter</label>
+                <select id="order-status-filter" class="form-control">
+                    <option value="">All Statuses</option>
+                    <option value="PENDING">PENDING (Action Required)</option>
+                    <option value="CONFIRMED">CONFIRMED</option>
+                    <option value="PROCESSING">PROCESSING</option>
+                    <option value="READY_FOR_DISPATCH">READY FOR DISPATCH</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="CANCELLED">CANCELLED</option>
+                    <option value="REJECTED">REJECTED</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Prescription Status</th>
+                        <th>Payment</th>
+                        <th>Order Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-admin-body">
+                    <!-- Rendered by orders-admin.js -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Manage / Process Order Modal -->
+    <div class="modal-overlay" id="manage-order-modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="manage-modal-title">Process Order</h3>
+                <button class="modal-close" onclick="closeManageOrderModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                
+                <!-- Customer Details Summary -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; font-size: 0.88rem; background: #f8fafc; padding: 1rem; border-radius: 8px;">
+                    <div>
+                        <span style="color: #64748b;">Customer Name:</span>
+                        <div style="font-weight: 700;" id="m-cust-name">-</div>
+                    </div>
+                    <div>
+                        <span style="color: #64748b;">Phone:</span>
+                        <div style="font-weight: 700;" id="m-cust-phone">-</div>
+                    </div>
+                    <div style="grid-column: 1/-1;">
+                        <span style="color: #64748b;">Delivery Address:</span>
+                        <div style="font-weight: 600;" id="m-cust-address">-</div>
+                    </div>
+                </div>
+
+                <!-- Prescription Verification Section -->
+                <div id="m-rx-box" style="display: none; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 1.25rem;">📋</span>
+                        <h4 style="color: #92400e;">Doctor's Prescription Review</h4>
+                    </div>
+                    <div style="font-size: 0.85rem; color: #78350f; margin-bottom: 0.75rem;">
+                        <strong>Prescription Details Provided:</strong>
+                        <p id="m-rx-note" style="margin-top: 0.25rem; font-style: italic;">-</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="m-rx-verifier" style="color: #92400e;">
+                            Pharmacist Verification Signature *
+                        </label>
+                        <input type="text" id="m-rx-verifier" class="form-control" placeholder="e.g. Sarah Jenkins, R.Ph. (License #PH-9921)">
+                    </div>
+                </div>
+
+                <!-- Order Items & FEFO Allocated Batches -->
+                <h4 style="margin-bottom: 0.5rem; font-size: 0.95rem;">Allocated Medicines & Batches (FEFO)</h4>
+                <div id="m-order-items-list" style="margin-bottom: 1.5rem;">
+                    <!-- Rendered dynamically -->
+                </div>
+
+                <!-- Update Status Form -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+                    <h4 style="margin-bottom: 0.75rem;">Update Order Progression</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="m-new-status">Transition Status *</label>
+                            <select id="m-new-status" class="form-control">
+                                <option value="CONFIRMED">CONFIRMED</option>
+                                <option value="PROCESSING">PROCESSING</option>
+                                <option value="READY_FOR_DISPATCH">READY FOR DISPATCH</option>
+                                <option value="COMPLETED">COMPLETED (Delivered)</option>
+                                <option value="REJECTED">REJECTED (Release Stock)</option>
+                                <option value="CANCELLED">CANCELLED (Release Stock)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="m-status-reason">Memo / Reason (If rejecting/cancelling)</label>
+                            <input type="text" id="m-status-reason" class="form-control" placeholder="Required for rejection/cancellation">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeManageOrderModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveOrderStatusUpdate()">Save Status & Update</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/orders-admin.js"></script>
+</body>
+</html>

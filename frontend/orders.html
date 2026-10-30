@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders & Tracking - PharmaTrack</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header Mount -->
+    <div id="navbar-mount"></div>
+
+    <div class="container" style="max-width: 960px;">
+                               
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">My Orders & Prescription Tracking</h1>
+                <p class="page-subtitle">Track your medication orders, delivery status, and batch traceability</p>
+            </div>
+            <a href="index.html" class="btn btn-outline">Browse More Medicines</a>
+        </div>
+
+        <!-- Orders Container -->
+        <div id="orders-container">
+            <!-- Rendered by orders.js -->
+        </div>
+
+    </div>
+
+    <!-- Cancel Order Confirmation Modal -->
+    <div class="modal-overlay" id="cancel-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Confirm Order Cancellation</h3>
+                <button class="modal-close" onclick="closeCancelModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: #475569;">
+                    Are you sure you want to cancel Order <strong id="cancel-modal-ord-no">#</strong>?
+                </p>
+                <div class="alert alert-warning">
+                    <strong>Stock Release Notice:</strong> Cancelling this order will immediately release the reserved medicine batches back to active warehouse inventory.
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="cancel-reason">Reason for Cancellation:</label>
+                    <select id="cancel-reason" class="form-control">
+                        <option value="Changed mind / No longer required">Changed mind / No longer required</option>
+                        <option value="Ordered wrong dosage or medicine">Ordered wrong dosage or medicine</option>
+                        <option value="Delivery address error">Delivery address error</option>
+                        <option value="Other customer reason">Other customer reason</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCancelModal()">Keep Order</button>
+                <button class="btn btn-danger" onclick="confirmCancelOrder()">Yes, Cancel & Release Stock</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/orders.js"></script>
+</body>
+</html>

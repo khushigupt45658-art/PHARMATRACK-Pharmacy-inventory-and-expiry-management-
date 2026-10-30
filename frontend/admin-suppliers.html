@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier & Restocking Management - PharmaTrack</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Header Mount -->
+    <div id="navbar-mount"></div>
+
+    <!-- Admin Sub-Navigation -->
+    <div class="sub-nav">
+        <a href="admin-dashboard.html">📊 Overview</a>
+        <a href="admin-medicines.html">💊 Medicines & Categories</a>
+        <a href="admin-batches.html">📦 Batches & Expiry (FEFO)</a>
+        <a href="admin-suppliers.html" class="active">🏭 Suppliers & Restocking</a>
+        <a href="admin-orders.html">🛍️ Order Fulfillment & Rx</a>
+        <a href="admin-reports.html">📈 Reports & CSV Export</a>
+    </div>
+
+    <div class="container">
+        
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Supplier Management & Stock Replenishment</h1>
+                <p class="page-subtitle">Manage pharmaceutical distributors, purchase orders, and stock receipts</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn btn-outline btn-sm" onclick="openSupplierModal()">+ Register Supplier</button>
+                <button class="btn btn-primary btn-sm" onclick="openPOModal()">+ Create Purchase Order</button>
+            </div>
+        </div>
+
+        <!-- Section 1: Purchase Orders (Restocking) -->
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; color: #0f172a;">Purchase Orders & Warehouse Inflow</h2>
+        <div class="table-responsive" style="margin-bottom: 2.5rem;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>PO #</th>
+                        <th>Supplier</th>
+                        <th>Order Date</th>
+                        <th>Received Date</th>
+                        <th>Total Cost</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="po-table-body">
+                    <!-- Rendered by suppliers.js -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Section 2: Registered Suppliers -->
+        <h2 style="font-size: 1.25rem; margin-bottom: 0.75rem; color: #0f172a;">Approved Suppliers Directory</h2>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Supplier Name</th>
+                        <th>Contact Person</th>
+                        <th>Contact Info</th>
+                        <th>Address</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="suppliers-table-body">
+                    <!-- Rendered by suppliers.js -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Register Supplier Modal -->
+    <div class="modal-overlay" id="supplier-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Register Pharmaceutical Supplier</h3>
+                <button class="modal-close" onclick="closeSupplierModal()">&times;</button>
+            </div>
+            <form id="form-supplier">
+                <div class="modal-body">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="supp-name">Company Name *</label>
+                        <input type="text" id="supp-name" class="form-control" required placeholder="e.g. Apex Pharma Distributing Co.">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="supp-contact">Contact Person</label>
+                            <input type="text" id="supp-contact" class="form-control" placeholder="Robert Mitchell">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="supp-phone">Phone Number</label>
+                            <input type="tel" id="supp-phone" class="form-control" placeholder="+1-800-555-0101">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="supp-email">Email Address</label>
+                        <input type="email" id="supp-email" class="form-control" placeholder="orders@supplier.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="supp-address">Warehouse / Office Address</label>
+                        <textarea id="supp-address" class="form-control" rows="2" placeholder="Full address"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeSupplierModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Register Supplier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Purchase Order Modal -->
+    <div class="modal-overlay" id="po-modal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Restocking Purchase Order</h3>
+                <button class="modal-close" onclick="closePOModal()">&times;</button>
+            </div>
+            <form id="form-purchase-order">
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Restocking Rule:</strong> Creating a PO does not increase inventory stock yet. Stock batches and audit logs are recorded when you mark the PO as <em>Received</em>.
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="po-supplier-select">Select Supplier *</label>
+                        <select id="po-supplier-select" class="form-control" required>
+                            <!-- Dynamically loaded -->
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="po-med-select">Medicine to Restock *</label>
+                        <select id="po-med-select" class="form-control" required>
+                            <!-- Dynamically loaded -->
+                        </select>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="po-batch-number">Expected Batch Number *</label>
+                            <input type="text" id="po-batch-number" class="form-control" required placeholder="e.g. BATCH-2026-R1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="po-quantity">Quantity (Units) *</label>
+                            <input type="number" id="po-quantity" class="form-control" required min="1" value="100">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label" for="po-mfg-date">Manufacturing Date *</label>
+                            <input type="date" id="po-mfg-date" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="po-exp-date">Expiry Date *</label>
+                            <input type="date" id="po-exp-date" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label" for="po-unit-cost">Unit Purchase Cost ($) *</label>
+                        <input type="number" id="po-unit-cost" class="form-control" required step="0.01" min="0.01" placeholder="3.50">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="po-notes">Order Notes / Memo</label>
+                        <input type="text" id="po-notes" class="form-control" placeholder="Optional notes for vendor">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePOModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Purchase Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/suppliers.js"></script>
+</body>
+</html>

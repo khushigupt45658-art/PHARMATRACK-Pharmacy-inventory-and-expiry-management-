@@ -1,0 +1,11 @@
+package com.pharmatrack.model;
+
+public enum MovementType {
+    PURCHASE_RECEIPT,
+    ORDER_RESERVATION,
+    ORDER_FULFILLMENT,
+    ORDER_CANCELLATION_RELEASE,
+    ADJUSTMENT_INCREASE,
+    ADJUSTMENT_DECREASE,
+    EXPIRED_DISPOSAL
+}
